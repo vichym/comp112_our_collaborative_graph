@@ -1,6 +1,6 @@
 ---
 title: 'Weekly Exercises #3'
-author: "Put your name here"
+author: "Vichearith Meas"
 output: 
   html_document:
     keep_md: TRUE
@@ -8,25 +8,28 @@ output:
     toc_float: TRUE
     df_print: paged
     code_download: true
+    code_folding: hide
+    theme: journal
 ---
 
 
 ```{r setup, include=FALSE}
-#knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
 ```
 
-```{r libraries}
+```{r libraries, include=FALSE}
 library(tidyverse)     # for graphing and data cleaning
 library(gardenR)       # for Lisa's garden data
 library(lubridate)     # for date manipulation
 library(ggthemes)      # for even more plotting themes
 library(geofacet)      # for special faceting with US map layout
 theme_set(theme_minimal())       # My favorite ggplot() theme :)
+devtools::install_github("llendway/gardenR")
 ```
 
 ```{r data}
 # Lisa's garden data
-data("garden_harvest")
+data(garden_harvest)
 
 # Seeds/plants (and other garden supply) costs
 data("garden_spending")
@@ -73,36 +76,88 @@ Before starting your assignment, you need to get yourself set up on GitHub and m
 
 These exercises will reiterate what you learned in the "Expanding the data wrangling toolkit" tutorial. If you haven't gone through the tutorial yet, you should do that first.
 
-  1. Summarize the `garden_harvest` data to find the total harvest weight in pounds for each vegetable and day of week (HINT: use the `wday()` function from `lubridate`). Display the results so that the vegetables are rows but the days of the week are columns.
+  1. Summarize the `garden_harvest` data to find the total harvest weight in pounds for each vegetable and day of week (HINT: use the `wday()` function from ` devtools::install_github("llendway/gardenR")`). Display the results so that the vegetables are rows but the days of the week are columns.
 
-```{r}
-
+```{r message=FALSE, warning=FALSE}
+garden_harvest %>% 
+  # group by`veg` then by `day` of the week
+  group_by(vegetable, day = wday(date,label = TRUE, abbr = TRUE)) %>% 
+  # get value of sum weight in gram
+  summarise(total_weight = sum(weight)) %>% 
+  # pivot the data set based on day value in day column and value from`total_weight`
+  pivot_wider(names_from = day, values_from=total_weight, values_fill = 0)
+  
 ```
 
   2. Summarize the `garden_harvest` data to find the total harvest in pound for each vegetable variety and then try adding the plot from the `garden_planting` table. This will not turn out perfectly. What is the problem? How might you fix it?
 
+
+There are duplicated observation from `garden_harvest` (using `left_join`) that get match to each `plot` and `variety` of `garden_planting` dataset. There is limited information to fix this since the there is no way we can know which plot the the harvested crops are from. 
+
+
 ```{r}
 
+garden_harvest %>% 
+  #  group by `veg`
+  group_by(vegetable) %>% 
+  # find sum weight in pounds (lbs) and round to 4 significant figures
+  summarise(total_weight = round(sum(weight)*0.00220462,3)) %>% 
+  #  join the dataset with `garden_planting` 
+  left_join(garden_planting, by="vegetable")
 ```
 
   3. I would like to understand how much money I "saved" by gardening, for each vegetable type. Describe how I could use the `garden_harvest` and `garden_spending` datasets, along with data from somewhere like [this](https://products.wholefoodsmarket.com/search?sort=relevance&store=10542) to answer this question. You can answer this in words, referencing various join functions. You don't need R code but could provide some if it's helpful.
+  
+  You can compute the total weight of harvested crop group by `vegetable` like what is done in 1 and use information about the cost from the `harvest_spending`  and the market price of each crop from third party sources like Wholefood to calculate the total amount of expenses from gardening and the total price if you were to buy the same amount of product from the market. You can first create a summarized table detailing the name and total weight of the crops. Then you can use the expense information from `harvest_spending` and market price information from third party sources to create a new table. Compute the total market price and the expense for each vegetable for the harvest weight. The sum of the difference of the two figurs will be the answer if you save or waste money on gardening. 
 
   4. Subset the data to tomatoes. Reorder the tomato varieties from smallest to largest first harvest date. Create a barplot of total harvest in pounds for each variety, in the new order.
 
-```{r}
+```{r message=FALSE}
 
+# create table to list the `variety` based on earliest harvest date
+garden_harvest %>%  
+  filter(vegetable=="tomatoes") %>% 
+  select( variety, date, weight) %>% 
+  mutate(variety2 = fct_reorder(variety, date, min, .desc = FALSE)) %>%  
+  group_by(variety2) %>% 
+  summarise(early = min(date))
+
+# plot a barplot but specifying the reordering directly in the aes()
+garden_harvest %>%  
+  filter(vegetable=="tomatoes") %>% 
+  select( variety, date, weight) %>% 
+  ggplot()+ 
+  geom_col(
+    aes(x = fct_reorder(variety, date, min, .desc = FALSE), 
+        y = weight, 
+        fill= variety))+
+  labs(x = "Date", 
+       y = "Weight", 
+       title = "Tomatoes: Harvest Weight by Variety", 
+       subtitle =" The varieties are listed from smallest to largest first harvest date")+
+  theme(axis.text.x = element_text(angle=90),
+        legend.position = "none")
 ```
 
   5. In the `garden_harvest` data, create two new variables: one that makes the varieties lowercase and another that finds the length of the variety name. Arrange the data by vegetable and length of variety name (smallest to largest), with one row for each vegetable variety. HINT: use `str_to_lower()`, `str_length()`, and `distinct()`.
   
 ```{r}
+garden_harvest %>%  
+  mutate(variety_lower = str_to_lower(variety),
+         variety_name_length = str_length(variety)) %>%
+  group_by(variety, variety_name_length) %>% 
+  distinct(variety_lower)
+  
 
 ```
 
   6. In the `garden_harvest` data, find all distinct vegetable varieties that have "er" or "ar" in their name. HINT: `str_detect()` with an "or" statement (use the | for "or") and `distinct()`.
 
 ```{r}
-
+garden_harvest %>% 
+  mutate(arer = str_detect(variety, "er|ar")) %>% 
+  filter(arer== TRUE) %>% 
+  distinct(variety)
 ```
 
 
@@ -231,6 +286,5 @@ This problem uses the data from the Tidy Tuesday competition this week, `kids`. 
 
   21. In this exercise, you are going to try to replicate the graph below, created by Georgios Karamanis. I'm sure you can find the exact code on GitHub somewhere, but **DON'T DO THAT!** You will only be graded for putting an effort into this problem. So, give it a try and see how far you can get without doing too much googling. HINT: use `facet_geo()`. The graphic won't load below since it came from a location on my computer. So, you'll have to reference the original html on the moodle page to see it.
   
-![](kids_data_karamanis.jpeg)
 
 **DID YOU REMEMBER TO UNCOMMENT THE OPTIONS AT THE TOP?**
