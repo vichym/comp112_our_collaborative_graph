@@ -183,7 +183,7 @@ Here is the code to read in the data. We do this a little differently than usual
 
 ```{r cache=TRUE}
 data_site <- 
-  "https://www.macalester.edu/~dshuman1/data/112/2014-Q4-Trips-History-Data-Small.rds" 
+  "https://www.macalester.edu/~dshuman1/data/112/2014-Q4-Trips-History-Data.rds" 
 Trips <- readRDS(gzcon(url(data_site)))
 Stations<-read_csv("http://www.macalester.edu/~dshuman1/data/112/DC-Stations.csv")
 ```
@@ -197,24 +197,50 @@ It's natural to expect that bikes are rented more at some times of day, some day
   7. A density plot, which is a smoothed out histogram, of the events versus `sdate`. Use `geom_density()`.
   
 ```{r}
-
+Trips %>%  
+  ggplot(aes(x=sdate))+
+  geom_density()+
+  labs(title="Trips dy Date", x="Date", y="Trips", caption = "by Vichearith Meas")
 ```
   
   8. A density plot of the events versus time of day.  You can use `mutate()` with `lubridate`'s  `hour()` and `minute()` functions to extract the hour of the day and minute within the hour from `sdate`. Hint: A minute is 1/60 of an hour, so create a variable where 3:30 is 3.5 and 3:45 is 3.75.
   
 ```{r}
-
+Trips %>%  
+  select("duration","sdate") %>%
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  ggplot(aes(x=time_of_day))+
+  geom_density()+
+  labs(title="Trips dy Time of Dat", x="Hour of day", y="Trips", caption = "by Vichearith Meas")
 ```
   
   9. A bar graph of the events versus day of the week. Put day on the y-axis.
   
 ```{r}
+Trips %>%  
+  select("duration","sdate") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  ggplot(aes(y=day_of_week, fill = day_of_week))+
+  geom_bar()+
+  theme(legend.position = "none")+
+  labs(title="The Events versus Day of the week", y="Day of Week", x="Trips", caption = "by Vichearith Meas")
 
 ```
   
   10. Facet your graph from exercise 8. by day of the week. Is there a pattern?
   
+  There is a pattern that for weekdays, there is a spike of trip around 8:00 am in the morning and another spike at 5:30 pm in the evening. For weekends, the trend grows slowly generally starting at 5:00 am and hits a peak at around 12:00 pm and 1:00 pm. Then the trend starts to decrease for the rest of the day.
+  
 ```{r}
+Trips %>%  
+  select("duration","sdate") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  ggplot(aes(x=time_of_day, color=day_of_week))+
+  geom_density()+
+  facet_wrap(~day_of_week)+
+  theme(legend.position = "none")+
+  labs(title="Trips by Time of Day", x="Hour of day", y="Trips", caption = "by Vichearith Meas")
 
 ```
   
@@ -223,24 +249,81 @@ The variable `client` describes whether the renter is a regular user (level `Reg
   11. Change the graph from exercise 10 to set the `fill` aesthetic for `geom_density()` to the `client` variable. You should also set `alpha = .5` for transparency and `color=NA` to suppress the outline of the density function.
   
 ```{r}
+Trips %>%  
+  select("duration","sdate", "client") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  ggplot(aes(x=time_of_day, color=day_of_week))+
+  geom_density(aes(fill = client, alpha=0.5), color=NA)+
+  facet_wrap(~day_of_week)+
+  theme(legend.position = "none")+
+  labs(title="Trips by Time of Day", x="Hour of day", y="Trips", caption = "by Vichearith Meas")
 
 ```
 
   12. Change the previous graph by adding the argument `position = position_stack()` to `geom_density()`. In your opinion, is this better or worse in terms of telling a story? What are the advantages/disadvantages of each?
   
+  In my opinion, the first graph describe the behaviour of each group throughout the day better. It gives a better understanding about when specific group of renter start their trips and overall characteristic of each group (peak time, how many at what time). By overlaying one over another, the first graph also give a better understand of when the two group overlap on tech other.  The second graph gives more understanding about the proportion of the two group at a given time of the day. Both gives a direct comparison that at a given time of the day, which group have more
 ```{r}
+Trips %>%  
+  select("duration","sdate", "client") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  ggplot(aes(x=time_of_day, color=day_of_week))+
+  geom_density(
+    aes(
+    fill = client, alpha=0.5), 
+    color=NA, 
+    position=position_stack())+
+  facet_wrap(~day_of_week)+
+  theme(legend.position = "none")+
+  labs(title="Trips by Time of Day", x="Hour of day", 
+       y="Trips", 
+       caption = "by Vichearith Meas")
 
 ```
   
   13. In this graph, go back to using the regular density plot (without `position = position_stack()`). Add a new variable to the dataset called `weekend` which will be "weekend" if the day is Saturday or Sunday and  "weekday" otherwise (HINT: use the `ifelse()` function and the `wday()` function from `lubridate`). Then, update the graph from the previous problem by faceting on the new `weekend` variable. 
   
 ```{r}
+Trips %>%  
+  select("duration","sdate", "client") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  mutate(weekend = ifelse(day_of_week %in% c("Sun","Sat"), "weekday", "weekend")) %>% 
+  ggplot(aes(x=time_of_day, color=day_of_week))+
+  geom_density(
+    aes(
+    fill = client, alpha=0.5), 
+    color=NA)+
+  facet_wrap(~weekend)+
+  theme(legend.position = "none")+
+  labs(title="Trips by Day of the Week", x="Hour of day", 
+       y="Trips", 
+       caption = "by Vichearith Meas")
 
 ```
   
   14. Change the graph from the previous problem to facet on `client` and fill with `weekday`. What information does this graph tell you that the previous didn't? Is one graph better than the other?
   
+  In previous graph, we can see the renter behavior of two  groups in weekend and weekdays. In this graph, we focus on only the difference in behaviour of all renter in weekend and weekdays. 
+  
 ```{r}
+Trips %>%  
+  select("duration","sdate", "client") %>%
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  mutate(time_of_day = hour(sdate)+ (round((minute(sdate)/60),2))) %>% 
+  mutate(weekend = ifelse(day_of_week %in% c("Sun","Sat"), "weekday", "weekend")) %>% 
+  ggplot(aes(x=time_of_day, color=day_of_week))+
+  geom_density(
+    aes(
+    fill = weekend, alpha=0.5), 
+    color=NA)+
+  facet_wrap(~weekend)+
+  theme(legend.position = "none")+
+  labs(title="Trips by Day of the Week", x="Hour of day", 
+       y="Trips", 
+       caption = "by Vichearith Meas")
 
 ```
   
@@ -249,12 +332,33 @@ The variable `client` describes whether the renter is a regular user (level `Reg
   15. Use the latitude and longitude variables in `Stations` to make a visualization of the total number of departures from each station in the `Trips` data. Use either color or size to show the variation in number of departures. We will improve this plot next week when we learn about maps!
   
 ```{r}
-
+Stations %>% 
+  rename(sstation = name) %>% 
+  left_join(Trips, by= 'sstation') %>% 
+  ggplot(aes(y = lat, x = long, color= sstation))+
+  geom_jitter(alpha= 0.25)+
+  theme(legend.position = "none")+
+  labs(title="Location of Departure Stations", x="Longtitude", 
+       y="Latitude", 
+       caption = "by Vichearith Meas")
 ```
   
   16. Only 14.4% of the trips in our data are carried out by casual users. Create a plot that shows which area(s) have stations with a much higher percentage of departures by casual users. What patterns do you notice? (Again, we'll improve this next week when we learn about maps).
   
+  Most caual renters use stations that go no further than 38.95 in latitude. In general, the they use station that is in center of the cluster. 
+  
 ```{r}
+Stations %>% 
+  rename(sstation = name) %>% 
+  left_join(Trips, by= 'sstation') %>% 
+  #  Plot only the Causal renter
+  filter(client == "Casual") %>%
+  ggplot(aes(y = lat, x = long, color= sstation))+
+  geom_jitter(alpha= 0.25)+
+  theme(legend.position = "none")+
+  labs(title="Location of Departure Stations", x="Longtitude",
+       y="Latitude",
+       caption = "by Vichearith Meas")
 
 ```
   
@@ -263,22 +367,41 @@ The variable `client` describes whether the renter is a regular user (level `Reg
   17. Make a table with the ten station-date combinations (e.g., 14th & V St., 2014-10-14) with the highest number of departures, sorted from most departures to fewest. Save this to a new dataset and print out the dataset. Hint: `as_date(sdate)` converts `sdate` from date-time format to date format. 
   
 ```{r}
+ten_stations_date <- Trips %>% 
+  mutate(station_date = paste(sstation, as_date(sdate), sep = " " )) %>% 
+  group_by(station_date) %>% 
+  summarize(number_departure = n()) %>% 
+  arrange(-number_departure) %>% 
+  slice(1:10) 
 
+ten_stations_date
 ```
   
   18. Use a join operation to make a table with only those trips whose departures match those top ten station-date combinations from the previous part.
   
 ```{r}
-
+ Trips %>% 
+  mutate(station_date = paste(sstation, as_date(sdate), sep = " " )) %>% 
+  right_join(ten_stations_date, by = "station_date")
 ```
   
   19. Build on the code from the previous problem (ie. copy that code below and then %>% into the next step.) and group the trips by client type and day of the week (use the name, not the number). Find the proportion of trips by day within each client type (ie. the proportions for all 7 days within each client type add up to 1). Display your results so day of week is a column and there is a column for each client type. Interpret your results.
 
 **DID YOU REMEMBER TO GO BACK AND CHANGE THIS SET OF EXERCISES TO THE LARGER DATASET? IF NOT, DO THAT NOW.**
 
+```{r}
+ Trips %>% 
+  mutate(station_date = paste(sstation, as_date(sdate), sep = " " )) %>% 
+  right_join(ten_stations_date, by = "station_date") %>% 
+  mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
+  group_by(client, day_of_week) %>% 
+  summarise (day_count=n()) %>%
+  mutate(proportion = paste(round(100 * day_count/sum(day_count), 0), "%"))
+```
 ## GitHub link
 
   20. Below, provide a link to your GitHub page with this set of Weekly Exercises. Specifically, if the name of the file is 03_exercises.Rmd, provide a link to the 03_exercises.md file, which is the one that will be most readable on GitHub.
+
 
 ## Challenge problem! 
 
