@@ -402,6 +402,9 @@ ten_stations_date
 
   20. Below, provide a link to your GitHub page with this set of Weekly Exercises. Specifically, if the name of the file is 03_exercises.Rmd, provide a link to the 03_exercises.md file, which is the one that will be most readable on GitHub.
 
+>
+> [Github Link](https://github.com/vichym/comp112_our_collaborative_graph)
+>
 
 ## Challenge problem! 
 
