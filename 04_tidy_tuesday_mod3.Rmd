@@ -1,0 +1,55 @@
+---
+title: 'Tidy Tuesday #4'
+author: "Put your name here"
+output: 
+  html_document:
+    df_print: paged
+    code_download: true
+    theme: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+```
+
+
+```{r libraries}
+library(tidyverse)     # for graphing and data cleaning
+library(lubridate)     # for date manipulation
+library(ggthemes)      # for even more plotting themes
+library(janitor)       # for cleaning variable names
+theme_set(theme_minimal()) # My favorite ggplot() theme :)
+```
+
+```{r}
+# Read in the data for the week
+georgia_pop <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/georgia_pop.csv')
+census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/census.csv')
+furniture <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/furniture.csv')
+city_rural <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/city_rural.csv')
+income <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/income.csv')
+freed_slaves <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/freed_slaves.csv')
+occupation <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/occupation.csv')
+conjugal <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/conjugal.csv')
+
+
+# If the code above gives an error, uncomment the code below and use it instead. You will need to install the tidytuesdayR package first
+
+# tuesdata <- tidytuesdayR::tt_load('2021-02-16')
+# 
+# This is just one of the datasets, you can read in more using similar notation: 
+# 
+# georgia_pop <- tuesdata$georgia_pop
+```
+
+The data this week is a little different this week. It is part of the `#DuBoisChallenge` where you will attempt to recreate visualizations made by W.E.B. DuBois for the 1900 Paris Exposition. This week it is even more important than usual to do some background reading. It minimum, please read the summary on the TidyTuesday [page](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-02-16/readme.md). There are some links on that page. I also like this [resource](https://publicdomainreview.org/collection/w-e-b-du-bois-hand-drawn-infographics-of-african-american-life-1900), which displays many of the graphs.
+
+A couple suggestions/thoughts for this week:
+
+1. In your breakout rooms, decide which graph to try to replicate. First, try to use one of the graphs you're familiar with to get close to looking like the DuBois graph you are replicating. Then, change some of the details, like background color (`plot.background` in `theme()`), labels, and colors. To match colors well, you might add this [ColorPick Eyedropper](https://chrome.google.com/webstore/detail/colorpick-eyedropper/ohcpnigalekghcmgcdcenkpelffpdolg?hl=en) Chrome extension that allows you to click on a color and gives you back the hex color, which you can use in R as a color (eg. #FFFFFF is white). Lastly try to add all the details. Do your best, but try not to spend more than 1-2 hours total.
+
+2. The variable names in the datasets reflect the variable names and values used by W.E.B. DuBois. Many of these words are now considered offensive. I think it is ok to use these words to replicate and pay homage to DuBois' work. But please be respectful of each other as you're discussing the data.
+
+
+When you are finished, please delete all the unneeded code and instructions and uncomment (delete the `#`) in the options section of code at the top. I encourage you to tweet out your graph with the `#TidyTuesday` hashtag and tag me, `@lisalendway`. See the Tidy Tuesday description file if you want to use our `@MacTidyTuesday` Twitter account to do that. I also recommend adding a caption or tag label with your name. You can do this by adding `labs(caption = "Your name")` to your plot code.
+
