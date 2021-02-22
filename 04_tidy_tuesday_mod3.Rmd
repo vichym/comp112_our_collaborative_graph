@@ -1,11 +1,11 @@
 ---
 title: 'Tidy Tuesday #4'
-author: "Put your name here"
+author: "Vichearith Meas"
 output: 
   html_document:
     df_print: paged
     code_download: true
-    theme: cerulean
+    theme: journal
 ---
 
 ```{r setup, include=FALSE}
