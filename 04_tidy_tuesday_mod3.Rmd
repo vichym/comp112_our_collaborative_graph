@@ -53,3 +53,28 @@ A couple suggestions/thoughts for this week:
 
 When you are finished, please delete all the unneeded code and instructions and uncomment (delete the `#`) in the options section of code at the top. I encourage you to tweet out your graph with the `#TidyTuesday` hashtag and tag me, `@lisalendway`. See the Tidy Tuesday description file if you want to use our `@MacTidyTuesday` Twitter account to do that. I also recommend adding a caption or tag label with your name. You can do this by adding `labs(caption = "Your name")` to your plot code.
 
+```{r}
+#### label data ####
+
+labels <- freed_slaves %>%
+  mutate(
+    y = 101.5,
+    label = paste(Free, "%")
+    )
+
+lines_df <- labels %>%
+  mutate(
+    y1 = 100,
+    yend = ifelse(Slave == 0, Slave, Slave + 3),
+    name = NA
+    )
+
+title1 <- "PROPORTION  OF  FREEMEN  AND  SLAVES  AMONG  AMERICAN  NEGROES  ."
+title2 <- "PROPORTION  DES  NÈGRES  LIBRES  ET  DES  ESCLAVES  EN  AMÉRIQUE  ."
+subtitle <- "DONE  BY  ATLANTA  UNIVERSITY  ."
+
+#### plots ####
+
+
+```
+
