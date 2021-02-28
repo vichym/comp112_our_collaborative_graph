@@ -1,0 +1,92 @@
+---
+title: "Mapping data in R: `ggmap` tutorial"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r libraries}
+library(tidyverse)     # for data cleaning and plotting
+library(googlesheets4) # for reading googlesheet data
+library(lubridate)     # for date manipulation
+library(openintro)     # for the abbr2state() function
+library(palmerpenguins)# for Palmer penguin data
+library(maps)          # for map data
+library(ggmap)         # for mapping points on maps
+library(ggthemes)      # for more themes (including theme_map())
+gs4_deauth()           # To not have to authorize each time you knit.
+theme_set(theme_minimal())
+```
+
+```{r data}
+# Lisa's Mallorca cycling data
+mallorca_bike_day7 <- read_csv("https://www.dropbox.com/s/zc6jan4ltmjtvy0/mallorca_bike_day7.csv?dl=1") %>% 
+  select(1:4, speed)
+```
+
+
+In this demo, we are going to use `ggmap` to plot a bike ride I went on in Mallorca, Spain in 2018. First, let's take a quick look at the data. The data were originally from my Garmin in a GPX file. I used a function called `readGPX()` from the `plotKML` library to get it into R - GPX data are UG-LY!
+
+Next, let's take a look at a map of [Mallorca](http://maps.stamen.com/#terrain/9/39.6078/3.0120) to get an idea of where it is for those who don't know. This is a stamen map, which is the same type of map we'll be bringing into R to make the map.
+
+
+Now, let's get the map of Mallorca. To decide the `bbox` values, I go to [openstreetmap](https://www.openstreetmap.org), put in my location, set to the right zoom, and click export. Then, I use the numbers in the corresponding boxes. This map also has a zoom number, as did the stamen map in the link above.
+
+```{r}
+mallorca_map <- get_stamenmap(
+    bbox = c(left = 2.2, bottom = 39.2, right = 3.7, top = 40), 
+    maptype = "terrain",
+    zoom = 10
+)
+```
+
+
+And, let's plot the map to make sure it looks like what we expected:
+
+```{r}
+ggmap(mallorca_map)
+```
+
+Now, we are going to plot the ride I went on (on the 7th day I was there). Let's start by plotting points. 
+
+```{r}
+ggmap(mallorca_map) +
+  geom_point(data = mallorca_bike_day7, 
+            aes(x = lon, y = lat),
+            size = .3) +
+  theme_map()
+```
+
+I want to make some changes, including:
+
+* Zooming in on the map more (ie. change `bbox` argument)  
+* Make the ride a line, rather than a point (use `geom_path()` rather than `geom_line()` to connect the points in order)  
+* Color the line by elevation and change the color scale
+* Eliminate the background color of the legend so it doesn't overlap the map
+
+```{r}
+mallorca_map <- get_stamenmap(
+    bbox = c(left = 2.28, bottom = 39.41, right = 3.03, top = 39.8), 
+    maptype = "terrain",
+    zoom = 11
+)
+ggmap(mallorca_map) +
+  geom_path(data = mallorca_bike_day7, 
+             aes(x = lon, y = lat, color = ele),
+             size = .5) +
+  scale_color_viridis_c(option = "magma") +
+  theme_map() +
+  theme(legend.background = element_blank())
+```
+
+
+
+
+
