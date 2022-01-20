@@ -6,75 +6,196 @@ output:
     df_print: paged
     code_download: true
     theme: journal
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE
+                      , error=FALSE, message=FALSE, warning=FALSE)
 ```
 
 
 ```{r libraries}
 library(tidyverse)     # for graphing and data cleaning
-library(lubridate)     # for date manipulation
 library(ggthemes)      # for even more plotting themes
 library(janitor)       # for cleaning variable names
 theme_set(theme_minimal()) # My favorite ggplot() theme :)
+library(glue)
+# library(tidytuesdayR)
+library(cowplot)     # for combining plot and legend manually
 ```
 
 ```{r}
-# Read in the data for the week
-georgia_pop <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/georgia_pop.csv')
-census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/census.csv')
-furniture <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/furniture.csv')
-city_rural <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/city_rural.csv')
-income <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/income.csv')
-freed_slaves <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/freed_slaves.csv')
+# # Read in the data for the week
+# georgia_pop <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/georgia_pop.csv')
+# census <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/census.csv')
+# # furniture <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/furniture.csv')
+# city_rural <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/city_rural.csv')
+# income <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/income.csv')
+# freed_slaves <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/freed_slaves.csv')
 occupation <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/occupation.csv')
-conjugal <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/conjugal.csv')
+# conjugal <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/conjugal.csv')
 
 
 # If the code above gives an error, uncomment the code below and use it instead. You will need to install the tidytuesdayR package first
-
+# 
 # tuesdata <- tidytuesdayR::tt_load('2021-02-16')
-# 
-# This is just one of the datasets, you can read in more using similar notation: 
-# 
+# # 
+# # This is just one of the datasets, you can read in more using similar notation: 
+# # 
 # georgia_pop <- tuesdata$georgia_pop
+# occupation <- tuesdata$occupation
 ```
 
 The data this week is a little different this week. It is part of the `#DuBoisChallenge` where you will attempt to recreate visualizations made by W.E.B. DuBois for the 1900 Paris Exposition. This week it is even more important than usual to do some background reading. It minimum, please read the summary on the TidyTuesday [page](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-02-16/readme.md). There are some links on that page. I also like this [resource](https://publicdomainreview.org/collection/w-e-b-du-bois-hand-drawn-infographics-of-african-american-life-1900), which displays many of the graphs.
 
-A couple suggestions/thoughts for this week:
-
-1. In your breakout rooms, decide which graph to try to replicate. First, try to use one of the graphs you're familiar with to get close to looking like the DuBois graph you are replicating. Then, change some of the details, like background color (`plot.background` in `theme()`), labels, and colors. To match colors well, you might add this [ColorPick Eyedropper](https://chrome.google.com/webstore/detail/colorpick-eyedropper/ohcpnigalekghcmgcdcenkpelffpdolg?hl=en) Chrome extension that allows you to click on a color and gives you back the hex color, which you can use in R as a color (eg. #FFFFFF is white). Lastly try to add all the details. Do your best, but try not to spend more than 1-2 hours total.
-
-2. The variable names in the datasets reflect the variable names and values used by W.E.B. DuBois. Many of these words are now considered offensive. I think it is ok to use these words to replicate and pay homage to DuBois' work. But please be respectful of each other as you're discussing the data.
-
-
-When you are finished, please delete all the unneeded code and instructions and uncomment (delete the `#`) in the options section of code at the top. I encourage you to tweet out your graph with the `#TidyTuesday` hashtag and tag me, `@lisalendway`. See the Tidy Tuesday description file if you want to use our `@MacTidyTuesday` Twitter account to do that. I also recommend adding a caption or tag label with your name. You can do this by adding `labs(caption = "Your name")` to your plot code.
+For this challenge, I plan to replicate the graph illustrating occupations of Negroes and Whites in Georgia. I would like to acknowledge that this is a challenging yet rewarding experience to try to replicate an illustration that is not given by libraries such as `ggplot` by default. That being said, I would like to acknowledge that the graph recreated below cannot be done without the knowledge shared by the R community online. 
 
 ```{r}
-#### label data ####
+# The actual data to occupy 61% of the pie_chart and the other 39% is empty
+data <- occupation %>%
+  clean_names() %>% 
+  # find the percentage of percentage of each row
+  mutate(plot_perc = percentage / sum(percentage)) %>% 
+  
+  # adject the plot percentage to occupie_chartd only 61%
+  mutate(plot_area = (plot_perc * 61)/100) %>% 
 
-labels <- freed_slaves %>%
-  mutate(
-    y = 101.5,
-    label = paste(Free, "%")
-    )
+# add the empty space for the 39%
+  bind_rows(tibble(group = c("Negroes", "Whites"),
+                   occupation = c("empty", "empty"),
+                   percentage = c(0,0),
+                   plot_area = c(0.195, 0.195))) %>%
+  
+  # Add factor levels to occuptation so the plot can be graphed based on that level 
+  mutate(occupation = factor(occupation,
+                             levels = c("Agriculture, Fisheries and Mining",
+                                        "Domestic and Personal Service",
+                                        "Manufacturing and Mechanical Industries",
+                                        "Trade and Transportation",
+                                        "Professions",
+                                        "Empty"))) %>%
+  
+  # Change label to replicate original labeling
+  mutate(occupation = case_when(
+           occupation == "Agriculture, Fisheries and Mining" ~ "AGRICULTURE, \nFISHERIES AND MINING.",
+           occupation == "Domestic and Personal Service" ~ "DOMESTIC AND\nPERSONAL SERVICE.",
+           occupation == "Manufacturing and Mechanical Industries" ~ "MANUFACTURING AND\nMECHANICAL INDUSTRIES.",
+           occupation == "Trade and Transportation" ~ "TRADE AND\nTRANSPORTATION.",
+           occupation == "Professions" ~ "PROFESSIONS."
+         )) %>% 
+  # calculated the sume of the y-ordinate for each group and occupation
+  arrange(desc(group), occupation) %>%
+  mutate(ypos = cumsum(plot_area)- 0.5*plot_area) %>%
+  
+  
+  # arrange based on occupation
+  arrange(occupation)
+```
 
-lines_df <- labels %>%
-  mutate(
-    y1 = 100,
-    yend = ifelse(Slave == 0, Slave, Slave + 3),
-    name = NA
-    )
+```{r}
+# Define variables
+fill_color_values = c("#d9213b", "#fecc0d", "#6f80b8", "#e0d5c3", "#ac886e")
+plot_background_fill = "#e9dccc"
+legend_font_size = 1.9
+```
 
-title1 <- "PROPORTION  OF  FREEMEN  AND  SLAVES  AMONG  AMERICAN  NEGROES  ."
-title2 <- "PROPORTION  DES  NÈGRES  LIBRES  ET  DES  ESCLAVES  EN  AMÉRIQUE  ."
-subtitle <- "DONE  BY  ATLANTA  UNIVERSITY  ."
 
-#### plots ####
+```{r}
+# Labeling data 
 
+label <- data %>%
+  select(occupation) %>%
+  # take only distinctive items 
+  distinct() %>%
+  # remove empty space
+  drop_na() %>%
+  # add coordination for the legend label. 
+  mutate(x = c(-1, 1, -1, 1, 1),
+         y = c(4, 5, 2, 1, 3),
+         # -1 is left, 1 is right
+         side = c(-1,1,-1,1,1))
+
+```
+
+
+```{r}
+# Pie Chart
+
+pie_chart <-
+  data %>% 
+  ggplot(
+         aes(y = "", 
+             x = plot_area,
+             fill = occupation,
+             group = group)) +
+  # draw pie_chart chart
+  geom_col(aes(
+    color = occupation == "empty")) +
+  coord_polar(start = pi - (55*pi)/180) +
+  
+  # change fill coloring
+  scale_fill_manual(
+    values = fill_color_values) +
+  
+  # remove coordinates
+  theme_void() +
+  
+  # remove legend, change font family and background color
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = plot_background_fill),
+        text = element_text(family = "mono"),
+        plot.title = element_text(hjust = .5, 
+                                  face = "bold",
+                                  size = 10)) +
+  # add text displaying percentage for each occupation
+  geom_text(aes(x = ypos, 
+                label = ifelse(occupation == "empty", NA, glue("{round(percentage,1)}%"))),
+            nudge_y = .35, 
+            family = "mono", 
+            size = 3) +
+  # label for each groups
+  annotate(geom = "text", x = 0.65, y = 1.5, label = "NEGROES.", family = "mono") +
+  annotate(geom = "text", x = 0.15, y = 1.5, label = "WHITES.", family = "mono") +
+  # change the border color of the NA item
+  scale_color_manual(values = c("#5f4e3b", NA)) +
+  #title 
+  labs(title = "OCCUPATIONS OF NEGROES AND WHITES IN GEORGIA.")
+```
+
+
+```{r}
+# Legend 
+
+legend <- 
+  ggplot(label, 
+         aes(x,y, 
+             fill = occupation)) +
+  # point showing color representing each occupation
+  geom_point(shape = 21,
+             size = 3 ) +
+  # labeling for each occupation 
+  geom_text(
+            aes(label = occupation),
+            # seperate right and left labels
+            nudge_x = ifelse(label$side == -1, .4,-.3), 
+            family = "mono", 
+            size = legend_font_size) +
+  
+  # change fill coloring
+  scale_fill_manual(values = fill_color_values) +
+  theme_void() +
+  # change font 
+  theme(text = element_text(family = "mono"),
+        legend.position = "none", aspect.ratio = .25) +
+  coord_cartesian(clip = "off")
+```
+
+
+```{r}
+# Draw everything: Plot and Legend
+ggdraw(plot = pie_chart) +
+  draw_plot(legend, scale = .45)
 
 ```
 

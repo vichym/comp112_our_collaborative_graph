@@ -18,194 +18,25 @@ output:
 
 ```r
 library(tidyverse)     # for data cleaning and plotting
-```
-
-```
-## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
-```
-
-```
-## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
-## ✓ tibble  3.0.3     ✓ dplyr   1.0.1
-## ✓ tidyr   1.1.1     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.5.0
-```
-
-```
-## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-```
-
-```r
 library(gardenR)       # for Lisa's garden data
 library(lubridate)     # for date manipulation
-```
-
-```
-## 
-## Attaching package: 'lubridate'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     date, intersect, setdiff, union
-```
-
-```r
 library(openintro)     # for the abbr2state() function
-```
-
-```
-## Loading required package: airports
-```
-
-```
-## Loading required package: cherryblossom
-```
-
-```
-## Loading required package: usdata
-```
-
-```r
 library(palmerpenguins)# for Palmer penguin data
 library(maps)          # for map data
-```
-
-```
-## 
-## Attaching package: 'maps'
-```
-
-```
-## The following object is masked from 'package:purrr':
-## 
-##     map
-```
-
-```r
 library(ggmap)         # for mapping points on maps
-```
-
-```
-## Google's Terms of Service: https://cloud.google.com/maps-platform/terms/.
-```
-
-```
-## Please cite ggmap if you use it! See citation("ggmap") for details.
-```
-
-```r
 library(gplots)        # for col2hex() function
-```
-
-```
-## 
-## Attaching package: 'gplots'
-```
-
-```
-## The following object is masked from 'package:stats':
-## 
-##     lowess
-```
-
-```r
 library(RColorBrewer)  # for color palettes
 library(sf)            # for working with spatial data
-```
-
-```
-## Linking to GEOS 3.4.2, GDAL 2.4.2, PROJ 4.8.0
-```
-
-```r
 library(leaflet)       # for highly customizable mapping
 library(ggthemes)      # for more themes (including theme_map())
 library(plotly)        # for the ggplotly() - basic interactivity
-```
-
-```
-## 
-## Attaching package: 'plotly'
-```
-
-```
-## The following object is masked from 'package:ggmap':
-## 
-##     wind
-```
-
-```
-## The following object is masked from 'package:ggplot2':
-## 
-##     last_plot
-```
-
-```
-## The following object is masked from 'package:stats':
-## 
-##     filter
-```
-
-```
-## The following object is masked from 'package:graphics':
-## 
-##     layout
-```
-
-```r
 library(gganimate)     # for adding animation layers to ggplots
 library(transformr)    # for "tweening" (gganimate)
-```
-
-```
-## 
-## Attaching package: 'transformr'
-```
-
-```
-## The following object is masked from 'package:sf':
-## 
-##     st_normalize
-```
-
-```r
 library(gifski)        # need the library for creating gifs but don't need to load each time
 library(shiny)         # for creating interactive apps
 theme_set(theme_minimal())
 library(janitor)       # for cleaning variable names
-```
-
-```
-## 
-## Attaching package: 'janitor'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     chisq.test, fisher.test
-```
-
-```r
 library(babynames)    # babynames dataset
-```
-
-```
-## 
-## Attaching package: 'babynames'
-```
-
-```
-## The following object is masked from 'package:openintro':
-## 
-##     births
-```
-
-```r
 library(ggrepel)
 ```
 
@@ -239,27 +70,7 @@ Once your repository is created, you should always open your **project** rather 
 ```r
 # graph from TidyTuesday 2
 hbcu_all <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-02/hbcu_all.csv') %>% clean_names()
-```
 
-```
-## Parsed with column specification:
-## cols(
-##   Year = col_double(),
-##   `Total enrollment` = col_double(),
-##   Males = col_double(),
-##   Females = col_double(),
-##   `4-year` = col_double(),
-##   `2-year` = col_double(),
-##   `Total - Public` = col_double(),
-##   `4-year - Public` = col_double(),
-##   `2-year - Public` = col_double(),
-##   `Total - Private` = col_double(),
-##   `4-year - Private` = col_double(),
-##   `2-year - Private` = col_double()
-## )
-```
-
-```r
 hbcu_by_gender <- hbcu_all %>%
   select(year, males, females) %>%
   pivot_longer(males:females,
@@ -284,20 +95,6 @@ data_site <-
   "https://www.macalester.edu/~dshuman1/data/112/2014-Q4-Trips-History-Data.rds" 
 Trips <- readRDS(gzcon(url(data_site)))
 Stations<-read_csv("http://www.macalester.edu/~dshuman1/data/112/DC-Stations.csv")
-```
-
-```
-## Parsed with column specification:
-## cols(
-##   name = col_character(),
-##   lat = col_double(),
-##   long = col_double(),
-##   nbBikes = col_double(),
-##   nbEmptyDocks = col_double()
-## )
-```
-
-```r
 Trips %>%  
   select("duration","sdate", "client") %>%
   mutate(day_of_week = wday(sdate, label = TRUE)) %>% 
@@ -680,6 +477,8 @@ NOT DUE THIS WEEK! If any of you want to work ahead, this will be on next week's
 ## GitHub link
 
   9. Below, provide a link to your GitHub page with this set of Weekly Exercises. Specifically, if the name of the file is 05_exercises.Rmd, provide a link to the 05_exercises.md file, which is the one that will be most readable on GitHub. If that file isn't very readable, then provide a link to your main GitHub page.
+  
+  [GitHub link](https://github.com/vichym/comp112_our_collaborative_graph/blob/main/05_exercises.md)
 
 
 **DID YOU REMEMBER TO UNCOMMENT THE OPTIONS AT THE TOP?**

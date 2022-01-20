@@ -1,0 +1,10 @@
+name: 06_exercise_shiny_app
+title:
+username:
+account: vichym
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3740585
+bundleId: 4304053
+url: https://vichym.shinyapps.io/06_exercise_shiny_app/
+when: 1614936847.49898
